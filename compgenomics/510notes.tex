@@ -111,6 +111,12 @@ Methods:
 				\item turn conditional prob into symmetric pairwise probabilities
 			\end{itemize}
 		\item Optimization methods for SNE
+			\begin{itemize}
+				\item simulated annealing could lead to better global optimization
+				\item add Gaussian noise to $y$ location in each update
+				\item spend longer time at noise level where global structure start to form
+				\item \textcolor{red}{t-SNE} - use Gaussian at many (infinite) spatial scales, cheaper as we don't have to exponentiate anymore \textcolor{blue}{(why????)} 
+			\end{itemize}
 				\end{itemize}
 \subsection{Supervised dim-red: Neural networks}
 \begin{itemize}
