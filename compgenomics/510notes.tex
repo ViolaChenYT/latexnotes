@@ -1,0 +1,133 @@
+\documentclass[font=12pt]{article}
+\usepackage{../hdr}
+\newcommand{\mycourse}{02-510 Computational genomics}
+
+\begin{document}
+
+\medskip
+
+\section{Normalization}
+\textcolor{red}{RPKM} is a very important normalization tool.\\
+\textcolor{blue}{not too sure about tpm, need to double check on that}
+
+\section{Single Cell}
+Goals:
+\begin{enumerate}
+	\item cells differentiates into sub-celltypes
+	\item unknown celltype discovery
+\end{enumerate}
+
+\subsection{Dimensionality reduction}
+Motivation:
+\begin{enumerate}
+	\item high dim data often has lower dim representation w/o much reconstruction error
+	\item lower dim representation can often represent info about high dim pairwise dist.
+\end{enumerate}
+Types of dim-red:
+\begin{itemize}
+	\item \textcolor{red}{Global methods}
+		\begin{enumerate}
+			\item all pairwise dist equally impt
+			\item lower dim pairwise dist fit high-dim ones
+			\item often use magnitude or rank order
+		\end{enumerate}
+	\item \textcolor{red}{Local methods}
+		\begin{enumerate}
+			\item only local dist reliable in high dim
+			\item more weight on modelling local dist correctly
+		\end{enumerate}
+\end{itemize}
+Methods:
+\begin{itemize}
+	\item PCA
+		\begin{itemize}
+			\item finds directions with largest variance
+			\item minimize squared reconstruction error
+			\item equiv to liner autoencoders
+			\item Steps of PCA
+			\begin{enumerate}
+				\item $\overline{X}$: mean of all samples(usually rows), adjust $ X \rightarrow X' = X - \overline{X}$ 
+				\item covar matrix $ C = X'^T X'$
+				\item find eigenvectors and eigenvalues of $C$, ie. all pair of $\vec{v}, \lambda$ st. $ C\vec{v} = \lambda \vec{v}$
+				\item eigenvalues can be used to calculate percentage of total variance for each component \[v_j = 100\frac{\lambda_j}{total \quad eigenvalue}\] 
+			\end{enumerate}
+		\end{itemize}
+		\textcolor{blue}{This is non-parametric method, do not insist on a parametric encoding function}
+	\item Multi-Dimensional Scaling
+		\begin{itemize}
+			\item  arrange low dim points to minimize diff between pairwise distances in the high and low D space
+			\item a possible approach: start w a random vector, perform gradient decent
+			\item \textcolor{red}{is there something to do with PCA?} then we don't need iterative method
+		\end{itemize}
+	\item Sammon (non-linear autoencoder)
+		\begin{itemize}
+			\item  with extra layers, much more powerful than PCA, but can be slow to converge, and can get stuck on local optima
+			\item Multi-Dimensional Scaling(MDS) can be made non-linear by giving higher weights to smaller distances, a popular formula is 
+				\[ cost = \sum_{ij} \left(\frac{|x_i - x_j| - |y_{i}-y_j|}{|x_i - x_j|}\right)^2\]
+				where $ x$ is high-dim dist, and  $y$ is low-dim dist
+			\item still slow and get stuck on local optima
+		\end{itemize}
+\end{itemize}
+
+\subsection{Graph-basd method}
+		\begin{itemize}
+			\item address uniform circularity
+			\item  \textcolor{red}{Isomap} is a dim-red technique based on graphs
+				\begin{itemize}
+					
+			\item each datapoint is connected to $k$ nearest neighbor in high-dim
+			\item edge weights = euclidean dist
+			\item approx of distance = shortest path in contracted graph
+			\end{itemize}
+		\item \textcolor{red}{Probabilistic local MDS}
+			\begin{itemize}
+				\item local distances are more impt than non-local ones
+				\item in this way all local distances are given equal importance	\end{itemize}
+
+		\item \textcolor{red}{stochastic neighbor embedding(SNE)} has a probabilistic way to decide if a distance is local
+			\begin{itemize}
+				\item convert global distances into probability of one datapoint picking another datapoint as its neighbor \textcolor{blue}{(what defines a neighbor tho) - still about isomaps?}
+				\item each point in high-dim has a conditional probability of picking any other point as its neighbor
+			\item distribution (some sort of Gaussian) is over high-dim distances (if high-dim coords unavailable, a similarity / dissimilarity matrix may be used)\\ $p_{j|i}$ is the prob. of picking j given starting at i in high-dim.
+				\[ P_{j|i} = \frac{e^{-2d_{ij}^2 / 2\sigma_i^2}}{\sum_k e^{{-d_{ik}^2}/{2\sigma_i^2}}} \]
+				\item having the probabilities potentially allow us to throw away the raw high-dimensional data
+				\item evaluation done using pairwise distance in low dimensional map (shows how well the lower dim representation models high-dim data ig)\\
+					$q_{j|i}$ is the prob of picking j given starting at i in low-dim
+				\item compute the \textcolor{red}{Kullback-Leibler divergence} between prob. in the high-dim and low-dim spaces \textcolor{blue}{(why not just use dist in high dim?) - more space / time efficient}
+				\item nearby pts in high-dim should be close in low-dim
+			\end{itemize}
+		\item picking $\sigma$ used to compute  $p$ - the radius of the gaussian
+			 \begin{itemize}
+				 \item different radius is needed in different parts of the space to keep the no. of neighbors constant
+				 \item big radius $\rightarrow$ high entropy for distribution over i's neighbors
+				 \item small radius $\rightarrow$ low entropy
+				
+			\end{itemize}
+		\item \textcolor{red}{Symmetric SNE}
+			\begin{itemize}
+				\item simpler than stochastic
+				\item works best if different procedures are used for computing $p$'s and  $q$'s.
+				\item compromise: no longer guarantees that if using same dimension will produce optimal solution
+				\item turn conditional prob into symmetric pairwise probabilities
+			\end{itemize}
+		\item Optimization methods for SNE
+				\end{itemize}
+\subsection{Supervised dim-red: Neural networks}
+\begin{itemize}
+	\item last few layers have much fewer values than inputs
+	\item use intermediate layers as lower-dim representations
+	\item can easily add prior biological knowledge, such as protein interactions or transcription factors
+	\item essentially, some nodes in the hidden layer are same as before, others are based on biological info
+\end{itemize}
+\subsubsection{Additional NN architecture: Siamese}
+\begin{itemize}
+	\item supervised, but not trying to maximize training accuracy
+	\item input: whether each pair is similar
+	\item output: binary label of similar / not similar
+	\item thus directly optimize dim-red layer for KNN
+\end{itemize}
+
+\section{ChIP-Seq}
+
+\section{cis-regulatory motif}
+\end{document}

@@ -1,0 +1,31 @@
+\usepackage[utf8]{inputenc}
+
+\oddsidemargin0cm
+\topmargin-2cm    
+\textwidth16.5cm   
+\textheight23.5cm  
+
+\usepackage{xspace}
+\usepackage{graphicx, color, caption,,kantlipsum,setspace}
+\usepackage{layout,xcolor}
+\usepackage{hyphenat}
+\hyphenation{Mathe-matik wieder-gewinnen}
+\renewcommand{\part}[1] {\vspace{.10in} {\bf (#1)}}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+
+\newcommand{\myname}{[Viola Chen]}
+\newcommand{\myandrew}{[Andrew ID:yitaoche]}
+% my own figure command
+\newcommand{\insertfigure}[3]{\begin{figure}[h!]
+    \centering
+    \includegraphics[scale=#2]{#1}
+    \caption{#3}
+\end{figure}}
+
+\pagestyle{fancyplain}
+\lhead{\fancyplain{}{\textbf{}}}      % Note the different brackets
+\rhead{\fancyplain{}{\myname\\ \myandrew}}
+\chead{\fancyplain{}{\mycourse}}
+
+
