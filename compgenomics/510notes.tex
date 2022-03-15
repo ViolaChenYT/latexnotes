@@ -172,11 +172,55 @@ Methods:
 			\includegraphics[scale=0.2]{concensusmotif}
 			\label{fig:concensusmotif}
 		\end{figure}
-		\item shows which nucleotide is most abundant at each position, represented as \textcolor{red}{Position Weight Matrix (PWM)}
-	\end{itemize}
+		\item shows which nucleotide is most abundant at each position, represented as \kyw{Position Weight Matrix (PWM)}
+		\item \textcolor{red}{Motif}: a \kyw{recurring} sequence with biological importance
+			\begin{itemize}
+				\item can be constant or have a feww variable elements
+				\item often serves as binding site for TFs /proteins
+				\item often very short (5-25)
+				\item often distant from gene
+				\item  often has inexact repeating pattern (challenge for identification)
+			\end{itemize}
+		\item sometimes also an effect of protein-protein interactions,\\
+			ie. protein conformation change upon interactions etc?
+		\item to determine binding site, often uses \textcolor{red}{Protein Weight Matrix}, but it is over-simplifying
+		\end{itemize}
 	\item How to identify where they bind
+		\begin{itemize}
+			\item genes regulated by the same TF are likely to have the same motif in regulatory region
+			\item to find genes regulated by the same TF $\rightarrow$ \cmt{comparative genomics} could be very useful
+			\item eg. knock-off of specific TFs $\rightarrow$ lower expression of a set of genes
+			\item group of genes that are co-expressed across many set of experiments are also likely to be regulated by same TF
+			\item challenges
+				\begin{itemize}
+					\item we don't know the exact motif seq
+					\item we don't know how far it will be
+					\item motifs can differ slightly across
+					\item how to distinguish it from just ``random'' sequences that happen to repeat?
+				\end{itemize}
+			\item Multiple sequence alignment (MSA)
+			\item motif-finding based on EM algorithm (MEME-suite - Multiple EM for Motif Elucidation)
+		\end{itemize}
 	\item How is it involved in gene regulation
 	\item Is it useful for gene regulatory network?
+\end{itemize}
+\subsection{ChIP-seq}
+\begin{itemize}
+	\item technology:
+		\begin{enumerate}
+			\item chromatin immunoprecipitation + high throughput sequencing
+			\item detect genome-wide location of TF and other binding proteins in labs
+			\item find all DNA seq bound by TF-X
+			\item try to learn the regulatory mechanisms of a TF or DNA-binding protein
+		\end{enumerate}
+	\item General strategies to call ChIP-seq peaks
+		\begin{itemize}
+			\item ChIP-seq yields distributions for tags from forward and reverse strands
+			\item overlap of the two can be observed
+			\item actual binding site of TF should be between the 2 distributions
+			\item from the difference between the 2 peaks $\rightarrow$ formulate a single \kyw{peak summit}  
+		\end{itemize}
+	\item MACS: model-based analysis for ChIP-seq
 \end{itemize}
 
 \newpage
