@@ -1,5 +1,6 @@
 \documentclass[font=12pt]{article}
 \usepackage{../hdr}
+\usepackage{graphics, graphicx}
 \newcommand{\mycourse}{02-510 Computational genomics}
 
 \begin{document}
@@ -132,8 +133,52 @@ Methods:
 	\item output: binary label of similar / not similar
 	\item thus directly optimize dim-red layer for KNN
 \end{itemize}
-
+\newpage
 \section{ChIP-Seq}
+\subsection{Background}
+\begin{itemize}
+	\item transcription factors bind to specific locations on the chromosome
+	\item the binding is highly specific
+	\item this has impact on gene regulation
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.6\linewidth]{TFillustration}
+		\label{fig:tfillustration}
+	\end{figure}
+	\item The core promotor regions has about 300 TF, \\
+	(general transcription machinery, required for the transcription of most things), \\
+	another 1500 TFs for others (proximal enhancer/promotor/silencer, only affect some genes)
+	\item comparisons of different whole genome enrichment technologies
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.4\linewidth]{genomewide_profiling_tech}
+		\label{fig:genomewideprofilingtech}
+	\end{figure}
+	
+\end{itemize}
+\subsection{Questions related to TF binding}
+\begin{itemize}
+	\item Where do they bind
+	\begin{itemize}
+		\item some almost always bind to proximal promotors
+		\item others could bind to many regions
+	\end{itemize}
+	\item How does specific binding work
+	\begin{itemize}
+		\item exists a consensus motif (most common sequence)
+		\item looks like this 
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[scale=0.2]{concensusmotif}
+			\label{fig:concensusmotif}
+		\end{figure}
+		\item shows which nucleotide is most abundant at each position, represented as \textcolor{red}{Position Weight Matrix (PWM)}
+	\end{itemize}
+	\item How to identify where they bind
+	\item How is it involved in gene regulation
+	\item Is it useful for gene regulatory network?
+\end{itemize}
 
+\newpage
 \section{cis-regulatory motif}
 \end{document}

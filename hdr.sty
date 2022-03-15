@@ -12,7 +12,7 @@
 \hyphenation{Mathe-matik wieder-gewinnen}
 \renewcommand{\part}[1] {\vspace{.10in} {\bf (#1)}}
 \usepackage{fancyhdr}
-\usepackage{amsmath}
+\usepackage{amsmath,graphics}
 
 \newcommand{\myname}{[Viola Chen]}
 \newcommand{\myandrew}{[Andrew ID:yitaoche]}
@@ -22,6 +22,8 @@
     \includegraphics[scale=#2]{#1}
     \caption{#3}
 \end{figure}}
+\newcommand{\kyw}[1]{\textcolor{red}{#1}}
+\newcommand{\cmt}[1]{\textcolor{blue}{#1}}
 
 \pagestyle{fancyplain}
 \lhead{\fancyplain{}{\textbf{}}}      % Note the different brackets
