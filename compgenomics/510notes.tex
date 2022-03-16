@@ -225,4 +225,137 @@ Methods:
 
 \newpage
 \section{cis-regulatory motif}
+
+
+\newpage
+\section{Haplotype inference}
+\subsection{Phase}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{phase}
+	\caption{}
+	\label{fig:phase}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{"haplotype structure"}
+	\label{fig:haplotype-structure}
+\end{figure}
+\begin{itemize}
+	\item Genotype inputation
+	\begin{itemize}
+		\item Given: SNP array genotype data
+		\item some has missing data / untyped SNPs
+		\item much cheaper
+		\item use HMM
+		\item more data, more acurate for inputation
+	\end{itemize}
+	\item Beagle / SHAPE-IT are most commonly used software
+\end{itemize}
+\subsection{Linkage disequilibrium (LD)}
+\begin{itemize}
+	\item reflect rs between alleles at diff loci
+	\begin{itemize}
+		\item linkage equilibrium: no linkage, not coupled
+		\item disequilibrium $ \rightarrow $ linkage
+	\end{itemize}
+	\item \kyw{LD:} allelic association meansure
+	\item calculating LD:
+	\begin{itemize}
+		\item assume independence, calculate expected frequency
+		\item $ D_{AB} = P_{AB} - P_A P_B $
+	\end{itemize}
+	\item calculate for all loci (SNPs)
+	\item spot-light figures\begin{figure}[h!]
+		\centering
+		\includegraphics[scale = 0.2]{"chromosome spotlight"}
+		\label{fig:chromosome-spotlight}
+	\end{figure}
+	\item neighboring loci shows more linkage\\
+	there could be LP blocks on the chromosome, where there's stronger linkage within block and weaker across block\\
+	each block is like a voting district / \kyw{Marker regions}
+	\item They are \cmt{Tag SNPs}
+	\item pretty standard practice
+	\item dense genotyping more expensive 
+	\begin{itemize}
+		\item get the LP
+		\item use inference on sparser genotyping 
+		\item multi-phase procedure
+	\end{itemize}
+\end{itemize}
+
+\section{Population structure}
+\subsection{Background}
+\begin{itemize}
+	\item def: set of individuals with distinct genetic variations
+	\item eg. ancestral history, lactose intolerance
+	\item Hardy-Weinburg equilibrium
+	\begin{itemize}
+		\item Under random mating, both allele and genotype frequency remain const
+		\item Current gen:
+		\begin{itemize}
+			\item $ D + H + R = 1 $
+			\item $ p = \frac{2D + H}{2} $
+			\item $ q = \frac{2R + H}{2} $
+		\end{itemize}
+		\item Next gen:
+		\begin{itemize}
+			\item $ D' = p^2 $
+			\item $ H' = 2pq $
+			\item $ R' = q^2 $
+			\item $ p' = \frac{2p^2 + 2pq}{2} = p^2 + pq = p $
+			\item $ q' = \frac{2p^2 + 2pq}{2} = q^2 + pq = q$
+		\end{itemize}
+		\item given population data, can test if it holds (often chi-square test)
+		\begin{itemize}
+			\item testing is recommended
+			\item if fail, means something is going on
+			\item or genotyping error
+			\item want HWE to hold for control group
+		\end{itemize}
+		\begin{enumerate}
+			\item compute allele freq from observed data
+			\item compute expected genotype freq
+			\item compute test statistic (deg of freedom 1)
+		\end{enumerate}
+		\item Due to \kyw{Genetic drift}, even when assumptions of HWE hold, HWE may not hold
+	\end{itemize}
+	\item genetic drift
+	\begin{itemize}
+		\item change in allele freq due to random sampling
+		\item all mutations eventually drift to 0 or 1 eventually
+		\item is neutral
+	\end{itemize}
+	\item Wright's $ F_{ST} $ (Wright-Fisher model)\\
+	\[ {{2N}\choose{k}} p^k q^{2N-k} \]
+	\item Ways how populations evolve
+	\begin{itemize}
+		\item population divergence\\
+		separated into subpopulations with independent selection and drift
+		\item admixture\\
+		mixing of population
+	\end{itemize}
+\subsection{Infering pop structure from genotype data (nowadays mostly just PCA)}
+Mixture model 
+\begin{itemize}
+	\item cluster individual into K populations
+	\item does not model admixture
+	\item cluster individual into populations
+	\item probability model for mixture of $ C $ Gaussians
+	\[ p(x) = \sum_{i=1}^k p(x|c=i)\cdot p(c=i)\]
+	\item $ c $: labels, $ p(c) $ label freq, multinuilli
+	\item $ x $: genotype / alleles, $ p(x|c) = \Pi_{i=1}^j p(x_i|c)$ , assume independence
+	\item can then learn the model with EM
+	\item Inference: $p(c|x)$ to infer cluster label
+\end{itemize}
+Admixture model
+\begin{itemize}
+	\item 
+\end{itemize}
+\end{itemize}
+
+
+
+
 \end{document}
