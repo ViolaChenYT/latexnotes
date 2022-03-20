@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2022.2.24)  16 MAR 2022 14:43
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021) (preloaded format=pdflatex 2022.2.24)  19 MAR 2022 17:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -365,12 +365,12 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 <phase.png, id=44, 1877.0125pt x 979.66pt>
 File: phase.png Graphic file (type png)
 <use phase.png>
-Package pdftex.def Info: phase.png  used on input line 235.
+Package pdftex.def Info: phase.png  used on input line 266.
 (pdftex.def)             Requested size: 328.62788pt x 171.5178pt.
 <haplotype structure.png, id=45, 1885.0425pt x 1256.695pt>
 File: haplotype structure.png Graphic file (type png)
 <use haplotype structure.png>
-Package pdftex.def Info: haplotype structure.png  used on input line 242.
+Package pdftex.def Info: haplotype structure.png  used on input line 273.
 (pdftex.def)             Requested size: 328.62788pt x 219.08119pt.
 
 
@@ -385,7 +385,7 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 <chromosome spotlight.png, id=51, 1345.025pt x 1100.11pt>
 File: chromosome spotlight.png Graphic file (type png)
 <use chromosome spotlight.png>
-Package pdftex.def Info: chromosome spotlight.png  used on input line 272.
+Package pdftex.def Info: chromosome spotlight.png  used on input line 303.
 (pdftex.def)             Requested size: 269.00023pt x 220.0181pt.
 
 
@@ -397,14 +397,14 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 (fancyhdr)                \addtolength{\topmargin}{-11.10004pt}.
 
 [9 <./chromosome spotlight.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 330--331
+Underfull \hbox (badness 10000) in paragraph at lines 361--362
 
  []
 
 
 Package amsmath Warning: Foreign command \atopwithdelims;
 (amsmath)                \frac or \genfrac should be used instead
-(amsmath)                 on input line 331.
+(amsmath)                 on input line 362.
 
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
@@ -425,10 +425,10 @@ Package fancyhdr Warning: \headheight is too small (12.0pt):
 
 [11] (./510notes.aux) ) 
 Here is how much of TeX's memory you used:
- 4076 strings out of 478994
- 64435 string characters out of 5858184
+ 4077 strings out of 478994
+ 64438 string characters out of 5858184
  693174 words of memory out of 5000000
- 21528 multiletter control sequences out of 15000+600000
+ 21529 multiletter control sequences out of 15000+600000
  405737 words of font info for 35 fonts, out of 8000000 for 9000
  1143 hyphenation exceptions out of 8191
  86i,12n,89p,280b,402s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -446,7 +446,7 @@ cmr5.pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
 .pfb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.p
 fb></usr/local/texlive/2021/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb
 >
-Output written on 510notes.pdf (11 pages, 2791674 bytes).
+Output written on 510notes.pdf (11 pages, 2794580 bytes).
 PDF statistics:
  102 PDF objects out of 1000 (max. 8388607)
  64 compressed objects within 1 object stream

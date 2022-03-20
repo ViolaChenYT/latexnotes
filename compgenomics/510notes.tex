@@ -206,7 +206,10 @@ Methods:
 \end{itemize}
 \subsection{ChIP-seq}
 \begin{itemize}
-	\item technology:
+	\item technology:\\
+	\kyw{ChIP}: chromatin immunoprecipitation\\
+	studies protein interaction with DNA\\
+	able to map global binding site precisely for any protein of interests
 		\begin{enumerate}
 			\item chromatin immunoprecipitation + high throughput sequencing
 			\item detect genome-wide location of TF and other binding proteins in labs
@@ -221,6 +224,34 @@ Methods:
 			\item from the difference between the 2 peaks $\rightarrow$ formulate a single \kyw{peak summit}  
 		\end{itemize}
 	\item MACS: model-based analysis for ChIP-seq
+	\begin{enumerate}
+		\item map reads using Bowtie2
+		\item get ChIP-seq reads around but may not contain binding site
+		\item sequence are from ends of randomly chopped segments $->$ hopefully overlap at binding site
+		\item produce 2 adj. set of read peaks located about $ 2\times $ fragment length away
+		\item \kyw{shift distance}: dist between read peaks at which will find true peak
+		\item automatically subtract control to define a final set of peaks
+	\end{enumerate}
+	\begin{itemize}
+		\item input: \\
+		bandwidth : sonication size\\
+		mfold: high-confidence fold enrichment
+		\item slides $ 2\times $ bandwidth window across genome to find regions with tags $ > mfold$ enriched compared to a random tag
+		\item random sample 1000 high quality peaks, separate their Watson Crick tags, and align by midpoint $->$ 2 peaks, shifts = $ d/2 $
+		\item tag distribution $ ~ Poisson $
+		\item MACS uses a dynamic parameter $ \lambda_{local} $
+		\item \cmt{P-val of peaks?}
+		\item \cmt{FDR?}
+	\end{itemize}
+	\item Downstream analysis
+	\begin{itemize}
+		\item to identify motif for TF using ChIP-seq peaks -- \kyw{MEME}
+		\item to find out what the sequence motifs resembles -- \kyw{TomTom}
+		\item to find peak regions of known motifs -- \kyw{FIMO}
+		\item look up biological pathways or functions of target genes of TF --\kyw{GREAT}
+	\end{itemize}
+	\item Practical pipeline
+	
 \end{itemize}
 
 \newpage
