@@ -13,6 +13,7 @@
 \renewcommand{\part}[1] {\vspace{.10in} {\bf (#1)}}
 \usepackage{fancyhdr}
 \usepackage{amsmath,graphics}
+\usepackage{subcaption}
 
 \newcommand{\myname}{[Viola Chen]}
 \newcommand{\myandrew}{[Andrew ID:yitaoche]}
@@ -30,5 +31,5 @@
 \lhead{\fancyplain{}{\textbf{}}}      % Note the different brackets
 \rhead{\fancyplain{}{\myname\\ \myandrew}}
 \chead{\fancyplain{}{\mycourse}}
-
+\newcommand{\lecture}[1]{\newpage\section{#1}}
 

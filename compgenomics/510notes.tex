@@ -1,16 +1,182 @@
 \documentclass[font=12pt]{article}
 \usepackage{../hdr}
-\usepackage{graphics, graphicx}
+\usepackage{graphics, graphicx,subcaption}
 \newcommand{\mycourse}{02-510 Computational genomics}
 
 \begin{document}
 
 \medskip
+\setcounter{section}{1}
+\section{Sequence Alignment}
 
+\newpage
+\section{Short read assembly}
+
+\newpage
+\section{Sequencing}
+
+\newpage
 \section{Normalization}
-\textcolor{red}{RPKM} is a very important normalization tool.\\
-\textcolor{blue}{not too sure about tpm, need to double check on that}
+\subsection*{Assumption}
+Assume the subset of the genes in the sample are expressed at the same total level across all cells / samples
+\subsection{Methods}
+\begin{itemize}
+	\item \textbf{\textcolor{red}{RPKM} - read per kilobase of transcript per million reads of library}
+	\begin{itemize}
+		\item Corrects for coverage, gene length
+		\item 1 RPKM ~ 0.3 -1 transcript / cell
+		\item Comparable between different genes within the same dataset
+		\item packages: TopHat / Cufflinks
+		\[ RPKM = \frac{\text{no. of reads mapped to gene G} \cdot 10^9 }{\text{total no. of mapped reads} \cdot \text{length of gene G}}\]
+	\end{itemize}
+	\item \textbf{\kyw{FPKM} - fragments Per Kilobase of exon model per Million mapped fragments}
+	\begin{itemize}
+		\item similar to FPKM
+		\item for pair-end seq, $ FPKM = 2 RPKM $
+		\[ FPKM = \frac{\text{no. of fragments mapped to the exons} \cdot 10^9 }{\text{total no. of mapped reads} \cdot \text{length of the exon}}\]
+	\end{itemize}
+	\item \textbf{\kyw{TPM} - transcript per million}
+	\begin{itemize}
+		\item Normalizes to transcript copies instead of reads 
+		\item Longer transcripts have more reads
+		\item RSEM, HTSeq
+		\item steps:
+	\end{itemize}
+	\begin{enumerate}
+		\item $ RPK = \dfrac{\text{read count of gene}}{\text{length of gene}} $
+		\item $ \text{scaling factor} = \sum RPK / 10^6 $
+		\item $ TPM = \dfrac{RPK}{\text{scalling factor}} $
+	\end{enumerate}
+	\item additional assumptions
+	\begin{enumerate}
+		\item values are exactly the same between runs (genes could have variable values)\\
+		$\to$ quantile normalization
+		\item values are normally distributed w same mean and var across samples\\
+		$\to$ scale factor normalization
+		\item assume some genes have stable values over runs (rank invariant)\\
+		$\to$ invariant set normalization
+	\end{enumerate}
+	\item \textbf{\kyw{TMM} - Trim Mean of M}
+	\begin{itemize}
+		\item high level idea: remove extreme values before normalizing
+		\item intuition:\\
+		sample A and B both have 100 genes sequenced to the same depth, 90 genes in A and B are expressed at about the same level, last 10 genes expressed at extremely high level in B\\
+		$\to$ could appear as the first 90 genes expressed twice as high in A than in B, which does not make sense\\
+		Reason: fixed amount of sequencing real estate
+		\item observed coutns of gene g in experiment k: $ E[Y_{g,k}] = \dfrac{\mu_{g,k} L_g}{S_k} N_k $, where
+		\begin{itemize}
+			\item $ S_k = \sum_g \mu_{g,k}L_g $
+			\item $ \mu_{g,k} $ true expression level of gene g in experiment k
+			\item $ L_g $ length of gene g
+			\item $ N_k $ total no. of reads for experiment k
+		\end{itemize}
+		\item $ M_g = \log \dfrac{Y_{g,k}/N_k}{Y_{g,k'}/N_{k'}} $
+		\item $ A_g =  \log Y_{g,k}/N_k + \log Y_{g,k'}/N_{k'}$
+		\item trim off genes with extreme M and A values (in the paper, took 5\% and 30\% as cutoff)
+		\item compute ratio based on all other genes
+	\end{itemize}
+\end{itemize}
+\subsection{Transformation}
+\begin{itemize}
+	\item While ratios are useful, not symmetric\\
+	$\to$ hard to visualize different changes
+	\item use a log transform, and focus on the log ratio
+	\[y_i = \log \dfrac{R_i}{G_i}\]
+	\item Empirical studies have also shown that in microarray experiments the log ratio of (most) genes tends to be normally distributed
+\end{itemize}
 
+
+\newpage
+\section{DE gene}
+\subsection{Problem}
+\begin{itemize}
+	\item log-fold change isn't ideal (there are problems)
+	\item noise from technology too
+	\item expression being double the amount $\to$ how reliable? $\to$ variation estimation
+	\item easy to estimation variation if large biological models, but often only 2-3 replicate available
+	\item Solution: often assume some mathematical model
+\end{itemize}
+\subsection{Statistical models}
+\begin{itemize}
+	\item Gaussian
+	\begin{itemize}
+		\item mean $ \mu $, var $ \sigma^2 $
+	\end{itemize}
+\end{itemize}
+A couple methods based on counts...
+\begin{itemize}
+	\item Binomial
+	\begin{itemize}
+		\item \[P(x=k)= {n\choose k} p^k (1-p)^{n-k} \]
+		\item mean: $ np $, var: $ np(1-p) $
+	\end{itemize}
+	\item Poisson
+	\begin{itemize}
+		\item \[P(x=k) = \dfrac{\lambda^k e^{-\lambda}}{k!}\]
+		\item mean = var = $ \lambda $
+	\end{itemize}
+	\item Negative Binomial
+	\begin{itemize}
+		\item common when data has variance $ >> $ mean (overdispersed)
+		\item defined as the number of successed in a seq of Bernoulli trials before \cmt{some number of} event $ r $ occurs, eg. no. of trials until 3 heads
+		\item Thus appropriate for modelling biological replicates
+		\item \[P(x=n) = {n-1\choose k}p^k(1-p)^r\]
+		where $ r $: no. of failures, $ k $: no. of successes until $ r $ failures, and $ n = k + r $
+		\item mean: $ rp/(1-p) $, var = $ rp / (1-p)^2 $
+		\item \underline{can be re-written in a format similar to Poisson dist.}
+		\item Poisson assumes same mean and variance, whereas NB assumes larger variance
+		\item $\to$ \kyw{dispersion parameter $ \alpha $} s.t. 
+		\[\text{mean} = \lambda, \text{ var} = \lambda + \alpha\lambda^2\]
+		\item NB = Poisson when $ \alpha = 0 $
+	\end{itemize}
+\end{itemize}
+\subsection{Hypothesis testing}
+\begin{itemize}
+	\item $ H_0 $: mean expression of the gene under two conditions are the same
+	\item p-value: how likely it is to see the data we observe under $ H_0 $
+	\item eg. one sample $ t $ test, two sample $ t $ test, non-parametric rank test, \textbf{$\chi^2$ test}
+\end{itemize}
+\subsection{log-likelihood ratio test}
+\begin{itemize}
+	\item Compute the likelihood under $ H_0 $ and $ H_1 $. ie. $$ \Pi_{i\in A} P(x=i | \text{model param}) \Pi_{i\in B} P(x=i | \text{model param}) $$
+	\item log-likelihood ratio = $ \log\dfrac{L1}{L0} $ (note we are assuming equal variance under both hypothesis)
+	\item degree of freedom: no. of free parameters - 1
+\end{itemize}
+\subsection{limitations}
+\begin{itemize}
+	\item assume specific probabilistic model
+	\item need many replicates
+	\item multiple hypothesis testing issue
+\end{itemize}
+\subsection{Multiple hypothesis testing}
+\begin{itemize}
+	\item eg. 1 trillion monkeys, one of the randomly typed out shakespear
+	\item Bonferroni Correction
+	\begin{itemize}
+		\item very conservative
+		\item may cause us to miss out genes
+		\item adjusted p-val = original pval / no. of genes testing
+	\end{itemize}
+	\item FDR
+	\begin{itemize}
+		\item 100 genes identified w p-val 0.05, then 5 genes are probably falsely discovered
+		\item \kyw{more stuff from hw2???}
+	\end{itemize}
+	\item Permutation based methods
+	\begin{itemize}
+		\item idea is to determine the prob. of seeing the real data in a random sample
+		\item divide by no. of permutations done
+		\item can be a problem when the no. of samples small
+	\end{itemize}
+	\item time series data are often too hard to be considered, not always possible
+\end{itemize}
+\newpage
+\section{Clustering}
+
+\newpage
+\section{Classification}
+
+\newpage
 \section{Single Cell}
 Goals:
 \begin{enumerate}
@@ -251,12 +417,101 @@ Methods:
 		\item look up biological pathways or functions of target genes of TF --\kyw{GREAT}
 	\end{itemize}
 	\item Practical pipeline
-	
+	\begin{itemize}
+		\item overview: TF-binding $\to$ co-factors $\to$ DNA histone modifications $\to$ DNA DS break
+		\item goal: converg NGS reads to singals / peaks tracks $\to$ infer potential TF binding regions\\
+		\includegraphics[width=0.7\linewidth]{chipseqpipeline}
+		\item fastq $\to$ FASTQC $\to$ bam/alignment \\
+		$\to$ wig:\\
+		- narrow $\to$ narrow peak caller\\
+		----calculate QC matrics\\
+		\includegraphics[width=0.7\linewidth]{narrowpeakcaller1}\\
+		- broad / mixed $\to$ broad peak caller
+		----calculate QC matrics\\
+		\includegraphics[width=0.45\linewidth]{broadpeakcaller}\\
+		\item QC good $\to$ differential enrichment
+		\item QC bad $\to$ combine replicates (IDR)
+	\end{itemize}
+	\item Steps: (eg. ENCODE)
+	\begin{enumerate}
+		\setcounter{enumi}{-1}
+		\item experiment design \\
+		- replicates (more replicates $ >> $ greater coverage)\\
+		if more TF targets $\to$ multiple hypothesis testing???
+		- choice of control
+		\begin{itemize}
+			\item open-chromatin regions fragmented more easily than closed ones
+			\item copy number variation in cancer samples
+			\item potential non-specific antibody binding
+			\item repetitive regions could cause alignment errors
+			\item MOST DO CONTROL AS PART OF THE INPUT
+			\item some also do mock IP as control (DNA obtained from IP by a mock antibody such as IgG)
+		\end{itemize}
+		* \textbf{matched control} is required for downstream analysis
+		\item input data \& QC
+		\begin{itemize}
+			\item fasta format $\to$ FastQC
+		\end{itemize}
+		\item Aignment and filtering
+		\begin{itemize}
+			\item alignment tools: bowtie, bwa$\to$output bam
+			\item QC = \% mapped
+			\item filtering tools: samtools, picard
+			\item QC = non-redundant fraction
+		\end{itemize}
+		\item Peak calling
+		\begin{itemize}
+			\item narrow peak
+			\item broad peak
+			\item QC: fraction of reads in peak (FRiP)
+			\begin{itemize}
+				\item FRiP values correlate positively and linearly with the number of called regions
+			\end{itemize}
+			\item QC: strand cross-correlation
+			\begin{itemize}
+				\item shift vectors with each other and calculate correlations
+				\item plot shift size w correlation
+			\end{itemize}
+			\item Irreproduncibility discovery rate (IDR)
+			\begin{itemize}
+				\item avoid of choices of initial peak caller cutoffs
+				\item modelling peaks pairs from replicates as belonging to two groups: reproducible group and irreproducible group
+			\end{itemize}
+			\includegraphics[width=\linewidth]{IDR}
+			\item visualization
+			\begin{itemize}
+				\item UCSC genome browser etc
+				\item IGV genome browser
+			\end{itemize}
+		\end{itemize}
+	\end{enumerate}
 \end{itemize}
 
 \newpage
 \section{cis-regulatory motif}
+\subsection{Background of transcription factor binding motif analysis}
+\begin{itemize}
+	\item basic for TF binding, where they bind
+	\item Position weight matrix (PWM)
+	\item \textit{De novo} motif binding
+	\begin{itemize}
+		\item comparative genomic approach $\to$ find motifs within same species
+	\end{itemize}
+\end{itemize}
 
+\subsection{Finding regulatory motifs}
+
+\subsection{Motif finding based on EM}
+
+\subsection{Transform a PWM into log likelihoods}
+
+\subsection{Comparative genomics - PhyloCon}
+\begin{itemize}
+	\item Align two profiles
+	\item each col $\to$ base count $ (n_A, n_C, n_G, n_T) \to (f_A, f_C,f_G,f_T)$
+	\item log-likelihood ratio = $ \sum_{\text{base }b} n_{bj}\ln (f_{bi}/p_b)  $
+	* not all regulatory elements are conserved\\
+\end{itemize}
 
 \newpage
 \section{Haplotype inference}
@@ -264,7 +519,6 @@ Methods:
 \begin{figure}[h!]
 	\centering
 	\includegraphics[width=0.7\linewidth]{phase}
-	\caption{}
 	\label{fig:phase}
 \end{figure}
 
@@ -316,6 +570,7 @@ Methods:
 	\end{itemize}
 \end{itemize}
 
+\newpage
 \section{Population structure}
 \subsection{Background}
 \begin{itemize}
@@ -367,24 +622,380 @@ Methods:
 		\item admixture\\
 		mixing of population
 	\end{itemize}
+\end{itemize}
 \subsection{Infering pop structure from genotype data (nowadays mostly just PCA)}
-Mixture model 
 \begin{itemize}
-	\item cluster individual into K populations
-	\item does not model admixture
-	\item cluster individual into populations
-	\item probability model for mixture of $ C $ Gaussians
-	\[ p(x) = \sum_{i=1}^k p(x|c=i)\cdot p(c=i)\]
-	\item $ c $: labels, $ p(c) $ label freq, multinuilli
-	\item $ x $: genotype / alleles, $ p(x|c) = \Pi_{i=1}^j p(x_i|c)$ , assume independence
-	\item can then learn the model with EM
-	\item Inference: $p(c|x)$ to infer cluster label
+	\item Mixture model 
+	\begin{itemize}
+		\item cluster individual into K populations
+		\item \cmt{does not model admixture}
+		\item cluster individual into populations
+		\item probability model for mixture of $ C $ Gaussians
+		\[ p(x) = \sum_{i=1}^k p(x|c=i)\cdot p(c=i)\]
+		\item $ c $: labels, $ p(c) $ label freq, multinuilli
+		\item $ x $: genotype / alleles, $$ p(x|c) = \Pi_{i=1}^j p(x_i|c)$$ , assume independence
+		\item can then learn the model with EM
+		\item Inference: $p(c|x)$ to infer cluster label
+	\end{itemize}
+	\item Admixture model
+	\begin{itemize}
+		\item modern species are mixture of ancestral populations
+		\item genome consists of contributions from multiple ancestral populations, eg. Asian, African, Caucassians
+		\item want to model it as a mosaic of variant
+		\item Assumptiosn
+		\begin{itemize}
+			\item no linkage disequilibrium
+			\item SNPs are iid
+		\end{itemize}
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[scale = 0.2]{"admixture.jpg"}
+		\end{figure}
+		\item for each individual $i: 1\rightarrow n $:
+		\begin{itemize}
+			\item sample $ \theta_i $ from Dirichlet$ (\alpha) $
+			\item for each loci $j: 1 \rightarrow L$
+			\begin{itemize}
+				\item sample $ Z_{j,i} $ from multinomial $ \theta_n $
+				\item sample $ X_{j,i} $ from $ \beta_{k_j} $ for $ k $ chosen by $ k= Z_{j,i} $
+			\end{itemize}
+		\end{itemize}
+	\item still have to go back to $ \beta $
+	\item instead of sampling $ p_c $ of population it gets $ p_c $ for each individual
+	\end{itemize}
+	\item Evaluations
+	\begin{itemize}
+		\item probabilistic model
+		\item is generative process
+		\item explanatory, descriptive, and interpretable
+		\item computation can be very expensive
+	\end{itemize}
+	\item PCA
+	\begin{itemize}
+		\item fast, although not too much information
+		\item input: $ N\times L $ for $ N $ individuals and $ L $ loci
+		\item good: easy visualization
+		\item bad: doesn't give intuition about what is going on, no allele frequency info
+	\end{itemize}
 \end{itemize}
-Admixture model
+\newpage
+\section{Linkage Analysis, GWAS(Genome Wide Association Study)}
+\subsection{Background}
 \begin{itemize}
-	\item 
+	\item Genome polymorphisms
+	\begin{itemize}
+		\item human genealogy \imp SNPs \imp haplotypes
+		\item useful markers for studying disease association
+		\item finding genetic markers that are likely to be linked with the disease locus, instead of finding the disease locus itself (cuz it's hard)
+		\item making use of linkage (dis)equilibrium, find those loci with $ r < 0.05 $
+	\end{itemize}
+	\item linkage analysis
+	\begin{itemize}
+		\item \cmt{family data}
+		\item more likely to have linkage data
+		\item Effective for rare diseases
+		\item Low resolution on the genomes (only a few recombinations)
+		\item \textbf{Parametric linkage analysis:}
+		\begin{itemize}
+			\item need to specify disease model
+			\item Highly effective for Mendelian disease caused by a single locus
+			\item usually large pedigree
+			\item Founder probabilities (founders: parents not in population)
+			\begin{itemize}
+				\item thus need to assign distributions to their genotypes
+				\item often done with Hardy-Weinburg
+				\item genotype of the founder couple assumed independence
+			\end{itemize}
+			\item children get their genes according to \textbf{Mendel's law}
+		\end{itemize}
+			\item from genotype \imp phenotype
+			\begin{itemize}
+				\item complete vs incomplete penetrance
+				\begin{align*}
+					\Pr{[complete | DD]} &= 1\\
+					\Pr{[incomplete | DD]} &< 1
+				\end{align*}
+			\item 
+			\end{itemize}
+	\end{itemize}
 \end{itemize}
+
+\subsection{GWAS}
+\subsection{single SNP association analysis}
+\begin{itemize}
+	\item \cmt{unrelated individuals}
+	\item Easier to find a large number of affected individuals
+	\item Effective for common diseases
+	\item Relatively high resolution for pinpointing the locus linked to the phenotype
 \end{itemize}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{"manhanttan plot"}
+	\label{fig:manhanttan-plot}
+\end{figure}
+\subsection{multimarker association test}
+\subsection{using reference datasets for genotype imputation}
+\begin{itemize}
+	\item reference data: dense SNP data - from dataset eg 1000 genome project
+	\item new data = sparser SNP
+	\item \kyw{leverage LD} - data after imputation w ref data\begin{figure}[h!]
+		\includegraphics[width=0.3\linewidth]{imputation_data}
+		\label{fig:imputationdata}
+	\end{figure}\\
+	\item imputation based method - everyone is doing it rn \begin{figure}[h!]
+		\includegraphics[width=0.5\linewidth]{imputation}
+		\label{fig:imputation}
+	\end{figure}
+	\item association to rare variants (GWAS only mostly apply to common variants)\\
+	at least a lot more confident when allele is common\\
+	ppl often combine multiple rare alleles along a gene and compare gene
+	\item underlying: common allele - common disease / common hypothesis -- assumption \\
+	usually 5\% considered ``common'', 0.5\% - 5\% considered ``low frequency variant'', else ``rare variant''
+	\item still quite a lot of variant to analyze
+	\item feasibility of detecting disease loci\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.5\linewidth]{feasibility.png}
+		\caption{}
+		\label{fig:feasibilitygwasloci}
+	\end{figure}
+\end{itemize}
+\subsection{Epistasis}
+\begin{itemize}
+	\item effect of one locus masks another loci\begin{figure}[h!]
+		\centering
+		\begin{subfigure}[b]{0.6\linewidth}
+		\includegraphics[width=0.6\linewidth]{noepistasis}
+		\centering
+		\caption{no epistasis}
+		\label{fig:noepistasis}
+		\end{subfigure}
+		\begin{subfigure}[b]{\linewidth}
+		\centering
+		\includegraphics[width=0.7\linewidth]{epistasis}
+		\caption{epistasis}
+		\label{fig:epistasis}
+	\end{subfigure}
+	\end{figure}
+	\item hard to detect - only if the interacting SNPs are considered jointly
+	\item also suffer from multiple testing problem
+\end{itemize}
+
+\subsection{Population struture and association analysis}
+\begin{itemize}
+	\item pop structure can cause false positives
+	\begin{itemize}
+		\item samples in case are often more related 
+		\item Any SNPs more prevalent in the case population will be found significantly with the case 
+		\item may capture both disease and population related SNPs
+		\item ideally have equal proportion of population in case and control
+	\end{itemize}
+	\item computationally solve the problem
+	\begin{itemize}
+		\item poputation based method
+		\item Eigenstrat: PCA based method
+		\begin{enumerate}
+			\item inferring ancestry - PCA applied\\
+			infer continuous axis
+			\item removing ancestry effects\\
+			genotype at candidate SNP adjust by amounts attributable to ancestry along each axis\\
+			scaling factor: regression on genotype - ancestral info\\
+			\cmt{missing eqns from notes}
+			\item association tests
+		\end{enumerate}
+		\item linear mixed model
+	\end{itemize}
+\end{itemize}
+\newpage
+\section{eQTL (expression quantitative trait locus)}
+\subsection{limitation of likage analysis and GWAS}
+\begin{itemize}
+	\item we often know the genetic loci
+	\item but don't know the molecular mechanism
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.4\linewidth]{eqtloverview}
+		\label{fig:eqtloverview}
+	\end{figure}
+	\item find connection between DNA and mRNA
+	\item eQTL mapping \begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.5\linewidth]{eqtlmappingeg}
+		\label{fig:eqtlmappingeg}
+	\end{figure}
+	\item genometype tissue expression (GTEx) project
+	\begin{itemize}
+		\item goal: characterize molecular function of human genome
+		\item postmortem samples from normal, non-disease tissues -> reference data
+	\end{itemize}
+	\item popular tool to study genetic basis of expression for 
+	\begin{itemize}
+		\item diff tissue types
+		\item diff diseases
+	\end{itemize}
+\end{itemize}
+\subsection{terminologies}
+\begin{itemize}
+	\item \kyw{eGene} genes whose expression is affected by eQTLs
+	\item \kyw{cis eQTL} in the genome, the eQTL is located \cmt{near} the eGene\\
+	– E.g.,mutations in the promoter region of a gene influence the expression level of the gene\\
+	-- but enhancers can be far away, may look like trans
+	\item \kyw{trans eQTL} eQTL is located \cmt{far away} (or on a different chromosome) \\
+	– E.g.,mutationsinthetranscriptionfactorgene\\
+	* cis regulatory can have downstream effect -> trans \begin{figure}[h!]
+		\centering
+		\includegraphics[width=0.7\linewidth]{cistranseqtl}
+		\label{fig:cistranseqtl}
+	\end{figure}
+	\item eg. From GTEx thyroid expression levels\\
+	• SNP rs1012793 affects expression of IRF1 in cis and PSME1 and PARP10 in trans
+\end{itemize}
+\subsection{human vs model organism}
+\begin{itemize}
+	\item human harder to collect data
+	\item model organisms can be cultured in a lab
+	\item Yeast recombinant inbred lines, instead of population of unrelated individuals
+	\begin{itemize}
+		\item two founder strains, BY and RM\\
+		– Mate the founders in a lab for generations\\
+		– Genotype/expression profile for ~110 progenies\\
+		– In a follow-up study\\
+		---- The same founders, ~1000 progenies, whole-genome sequencing, RNA-seq
+	\end{itemize}
+	\item effect of recombination
+	\begin{itemize}
+		\item schuffle genome through mating
+		\item More generations of mating means more shuffling through recombinations and higher resolution for eQTL mapping
+	\end{itemize}
+\end{itemize}
+\subsection{allele-specific eQTL mapping}
+\begin{itemize}
+	\item cis-acting elements - DNA sequences in the regulatory region of the gene(e.g.,TF binding	sites)
+	\item trans-acting elements - RNA and proteins that interact w cis
+	\item problem:
+	\begin{itemize}
+		\item assumed cis = local and trans = distant, but not the case
+		\item exists nearby trans and distant cis
+	\end{itemize}
+	\item fix: \kyw{allele-specifc expression quantification w transcriptome RNA-seq}
+	\begin{itemize}
+		\item diploid: maternal / paternal allele diff, RNA-seq can capture this
+	\end{itemize}
+	\item idea: between two species
+	\begin{itemize}
+		\item Studied cis/trans regulatory divergence between two species
+		– First study that makes use of allele-specific gene expressions to learn about gene regulatory network
+		– Examines genome / transcriptome data for two parent species and their F1 progeny
+	\end{itemize}
+	\item idea: extension to population genome / transcriptome data
+\end{itemize}
+
+\subsection{allele specific eQTL mapping}
+\begin{itemize}
+	\item cis-trans regulatory divergence in two species
+	\item cis / trans, but location not very helpful
+	\item Only cis-regulatory divergence between two species
+	\begin{itemize}
+		\item only in each chromosomes? local?\includegraphics[width=0.5\linewidth]{cis-regulatory}
+		\item no cross regulation $\to$ high and low
+	\end{itemize}
+	\item trans-regulatory divergence:
+	\begin{itemize}
+		\item \includegraphics[width=0.5\linewidth]{trans-regulatory}
+		\item both are medium $\to$ got averaged out
+		\item since there are trans-regulation
+		\item one transcription factor is less efficient than the other
+	\end{itemize}
+	\item ratio between the high and low in parents vs. ratio in F1 progeny
+	\item ratio = 1 $\to$ trans-regulatory divergence
+	\item $ y = x \to $ cis-regulatory divergence
+	\item most genes are influced by a mix of the two
+	\item regulatory genes tend to be trans-acting
+	\item structural genes: Usually terminal nodes with no trans- acting effects
+\end{itemize}
+
+\subsection{limitations}
+\begin{itemize}
+	\item only examine 2 species and offspring (sample size too small)
+	\item can do on population
+	\item Population-based study: allele-specific eQTL mapping
+	\item Cis-acting eQTLs = cis-regulatory variation
+	\begin{itemize}
+		\item linear model wrt alleles (eg, A, C, T, G)
+	\end{itemize}
+	\item Trans-acting eQTLs = trans-regulatory variation
+	\begin{itemize}
+		\item linear model wrt genotypes (eg, AA, Aa, CG)
+	\end{itemize}
+\end{itemize}
+\newpage
+\section{scRNA-seq \& CRISPR}
+\subsection{Background}
+\begin{itemize}
+	\item experimental validation of eQTL w CRISPR perturbation
+	\begin{itemize}
+		\item genome editing w CRISPR, followed by scRNA
+	\end{itemize}
+	\item scRNA made possible
+	\begin{itemize}
+		\item Cell–type specific eQTLs
+		\item  Co-expression eQTLs
+	\end{itemize}
+\end{itemize}
+
+\subsection{co-expression eQTLs}
+\begin{itemize}
+	\item one vector for expression and one vector for genotype
+	\item coexpression eQTL: study eQTLs that influence “co-expression” between two genes
+	\item $\to$ personal gene regulatory network
+\end{itemize}
+
+\subsection{CRISPR}
+\begin{itemize}
+	\item genetic screnning
+	\item three components
+	\begin{itemize}
+		\item Perturb:Knockout,RNAi,CRISPR
+		\item Model:primary cells,organoids,mice
+		\item Assay:measuring phenotypes of interest,RNA-seq,scRNA-seq
+	\end{itemize}
+	\item Cas9 molecule
+	\begin{itemize}
+		\item acomponentofthetypeIICRISPR bacterial adaptive immune system
+		\item DNAdouble-strandbreak(DSB)by Cas9 is repaired by the endogenous DNA DSB repair pathways
+	\end{itemize}
+	\item sgRNA (single guide RNA)
+	\begin{itemize}
+		\item guide Cas9 to the correct place
+		\item 20bp complimentary to the target DNA
+	\end{itemize}
+	\item CRISPR knockout
+	\item CRISPR interference
+	\begin{itemize}
+		\item repress gene of interest
+	\end{itemize}
+	\item CRISPR activation
+	\begin{itemize}
+		\item overexpress the gene of interest
+	\end{itemize}
+\end{itemize}
+\subsection{array vs pooled screening}
+\begin{itemize}
+	\item array screening\includegraphics[width=0.7\linewidth]{arrayscreening}
+	
+	\item pooled screening\includegraphics[width=0.7\linewidth]{pooledscreening}
+	\item viability screens
+	\begin{itemize}
+		\item negative screen\\
+		Perturbations that reduce cell fitness will be depleted by the end of the screen
+		\item positive screen\\
+		Perturbations that give survival advantage to the cells, e.g., alternative culture conditions, small molecules
+	\end{itemize}
+\end{itemize}
+
+
+
+
+
 
 
 
